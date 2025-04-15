@@ -1,0 +1,37 @@
+services:
+  strapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        API_TOKEN_SALT: $STRAPI_API_TOKEN_SALT
+        TRANSFER_TOKEN_SALT: $STRAPI_TRANSFER_TOKEN_SALT
+    ports:
+      - 1337:1337
+    container_name: strapi
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: $STRAPI_POSTGRES_DB
+      DATABASE_USERNAME: $STRAPI_POSTGRES_USER
+      DATABASE_PASSWORD: $STRAPI_POSTGRES_PASSWORD
+      JWT_SECRET: $STRAPI_JWT_SECRET
+      ADMIN_JWT_SECRET: $STRAPI_ADMIN_JWT_SECRET
+      APP_KEYS: $STRAPI_APP_KEYS
+      API_TOKEN_SALT: $STRAPI_API_TOKEN_SALT
+      TRANSFER_TOKEN_SALT: $STRAPI_TRANSFER_TOKEN_SALT
+      NODE_ENV: $NODE_ENV
+  postgres:
+    image: postgres:latest
+    # container_name: postgres
+    environment:
+      POSTGRES_USER: $STRAPI_POSTGRES_USER
+      POSTGRES_DB: $STRAPI_POSTGRES_DB
+      POSTGRES_PASSWORD: $STRAPI_POSTGRES_PASSWORD
+    # volumes:
+    #   - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+    driver: local

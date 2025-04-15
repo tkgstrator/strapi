@@ -1,0 +1,27 @@
+# node_modules はコンテナ内で npm install するから除外！
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml
+
+# Git 関係のファイル
+.git
+.gitignore
+
+# 環境変数ファイル（安全のため）
+.env
+.env.*
+
+# OSごとのゴミファイル
+.DS_Store
+Thumbs.db
+
+# エディタの設定ファイル
+.vscode
+.idea
+
+# Dockerfile 自体と無関係なビルド成果物とか
+# dist
+# build
+# coverage
+.devcontainer
