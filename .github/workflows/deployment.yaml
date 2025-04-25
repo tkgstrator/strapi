@@ -67,8 +67,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ env.LATEST_REPO_TAG }}
-            ${{ secrets.DOCKER_HUB_USERNAME }}/api:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/api:${{ env.LATEST_REPO_TAG }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/strapi:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/strapi:${{ env.LATEST_REPO_TAG }}
           platforms: linux/amd64,linux/arm64
           build-args: |
             VERSION=${{ env.LATEST_REPO_TAG }}
@@ -86,8 +86,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest-dev
             ghcr.io/${{ github.repository }}:${{ env.LATEST_REPO_TAG }}-dev
-            ${{ secrets.DOCKER_HUB_USERNAME }}/api:latest-dev
-            ${{ secrets.DOCKER_HUB_USERNAME }}/api:${{ env.LATEST_REPO_TAG }}-dev
+            ${{ secrets.DOCKER_HUB_USERNAME }}/strapi:latest-dev
+            ${{ secrets.DOCKER_HUB_USERNAME }}/strapi:${{ env.LATEST_REPO_TAG }}-dev
           platforms: linux/amd64,linux/arm64
           build-args: |
             VERSION=${{ env.LATEST_REPO_TAG }}
