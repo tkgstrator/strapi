@@ -62,6 +62,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile.prod
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
@@ -69,7 +70,6 @@ jobs:
             ${{ secrets.DOCKER_HUB_USERNAME }}/api:latest
             ${{ secrets.DOCKER_HUB_USERNAME }}/api:${{ env.LATEST_REPO_TAG }}
           platforms: linux/amd64,linux/arm64
-          dockerfile: Dockerfile.prod
           build-args: |
             VERSION=${{ env.LATEST_REPO_TAG }}
             BUN_VERSION=${{ env.BUN_VERSION }}
@@ -81,6 +81,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile.dev
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest-dev
@@ -88,7 +89,6 @@ jobs:
             ${{ secrets.DOCKER_HUB_USERNAME }}/api:latest-dev
             ${{ secrets.DOCKER_HUB_USERNAME }}/api:${{ env.LATEST_REPO_TAG }}-dev
           platforms: linux/amd64,linux/arm64
-          dockerfile: Dockerfile.dev
           build-args: |
             VERSION=${{ env.LATEST_REPO_TAG }}
             BUN_VERSION=${{ env.BUN_VERSION }}
