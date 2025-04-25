@@ -9,6 +9,10 @@ services:
         VERSION: 5.12.6
     ports:
       - 1337:1337
+    command:
+      - bun
+      - run
+      - develop
     environment:
       NODE_ENV: production
       DATABASE_CLIENT: postgres
