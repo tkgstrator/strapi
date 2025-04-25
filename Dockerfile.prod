@@ -1,0 +1,65 @@
+ARG BUN_VERSION=1.2.10
+ARG NODE_VERSION=22.15.0
+ARG VERSION=5.12.6
+
+FROM node:${NODE_VERSION} AS node
+# Build stage: Install dependencies and build the app
+FROM oven/bun:${BUN_VERSION} AS build
+
+WORKDIR /opt
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -fs /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+RUN ln -fs /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npx
+RUN bash -c "bun create strapi@${VERSION} app \
+    --no-run \
+    --typescript \
+    --use-yarn \
+    --no-install \
+    --no-git-init \
+    --no-example \
+    --skip-cloud \
+    --dbclient postgres \
+    --dbhost postgres \
+    --dbport 5432 \
+    --dbname strapi \
+    --dbusername strapi \
+    --dbpassword postgres"
+
+WORKDIR /opt/app
+RUN bun install
+RUN bun strapi build
+
+# Module stage: Install production dependencies
+FROM oven/bun:${BUN_VERSION} AS module
+WORKDIR /opt/app
+
+# Copy package files and install production dependencies
+COPY --from=build /opt/app/package.json /opt/app/package.json
+RUN bun install --production
+
+# Final stage: Set up the production image
+FROM oven/bun:${BUN_VERSION}-slim
+
+WORKDIR /opt/app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libvips-dev \
+    zlib1g-dev \
+    libpng-dev
+
+# Set environment variable
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
+
+# Copy necessary files from build and module stages
+COPY --from=module /opt/app/node_modules ./node_modules
+COPY --from=build /opt/app/dist ./
+COPY --from=build /opt/app/.strapi ./.strapi
+COPY --from=build /opt/app/public ./public
+COPY --from=build /opt/app/.strapi-updater.json ./.strapi-updater.json
+COPY --from=build /opt/app/package.json ./package.json
+
+# Start the app
+CMD ["bun", "run", "start"]

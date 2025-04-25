@@ -1,0 +1,33 @@
+services:
+  strapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_VERSION: 22.15.0 
+        BUN_VERSION: 1.2.10
+        VERSION: 5.12.6
+    ports:
+      - 1337:1337
+    environment:
+      NODE_ENV: production
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: strapi
+      DATABASE_USERNAME: strapi
+      DATABASE_PASSWORD: postgres
+      JWT_SECRET: AWQgzkXpFeo4EgUV
+      ADMIN_JWT_SECRET: T1NAhCfP2YxM0hN2
+      APP_KEYS: PJ2pA285Nw5Egq5h,Q2kHZuK3J9XhAATN,Q2kHZuK3J9XhAATN,rV5NL8VGaHbAmyA6
+      API_TOKEN_SALT: WWtD5wCXzhpda6sn
+      TRANSFER_TOKEN_SALT: bNBchTme4ZAgKNPQ
+
+  postgres:
+    image: postgres:15.4
+    environment:
+      POSTGRES_USER: strapi
+      POSTGRES_PASSWORD: postgres 
+      POSTGRES_DB: strapi
+    ports:
+      - 5432:5432

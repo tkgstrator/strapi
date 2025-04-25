@@ -1,0 +1,97 @@
+name: Deploy to GitHub Registry
+
+on:
+  workflow_dispatch: 
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  deploy:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get latest Node.js 22.x tag from Docker Hub
+        id: node
+        run: |
+          NODE_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/library/node/tags?page_size=1000 | jq -r '.results[] | select(.name | test("^22\\.[0-9]+\\.[0-9]+$")) | .name' | sort -V | tail -n 1)
+          echo "Latest Node.js 22 version is: $NODE_VERSION"
+          echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_ENV
+
+      - name: Get latest Bun version
+        id: bun 
+        run: |
+          BUN_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/oven/bun/tags?page_size=1000 | jq -r '.results[] | select(.name | test("^1\\.[0-9]+\\.[0-9]+$")) | .name' | sort -V | tail -n 1)
+          echo "Latest Bun version is: $BUN_VERSION"
+          echo "BUN_VERSION=$BUN_VERSION" >> $GITHUB_ENV
+
+      - name: Get latest tag of a specific repository
+        id: repo
+        run: |
+          REPO_OWNER="strapi"
+          REPO_NAME="strapi"
+          LATEST_REPO_TAG=$(curl -s https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/tags | jq -r '.[0].name')
+          echo "Latest tag of $REPO_OWNER/$REPO_NAME is: $LATEST_REPO_TAG"
+          echo "LATEST_REPO_TAG=$LATEST_REPO_TAG" >> $GITHUB_ENV
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ env.LATEST_REPO_TAG }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/api:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/api:${{ env.LATEST_REPO_TAG }}
+          platforms: linux/amd64,linux/arm64
+          dockfile: Dockerfile.prod
+          build-args: |
+            VERSION=${{ env.LATEST_REPO_TAG }}
+            BUN_VERSION=${{ env.BUN_VERSION }}
+            NODE_VERSION=${{ env.NODE_VERSION }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest-dev
+            ghcr.io/${{ github.repository }}:${{ env.LATEST_REPO_TAG }}-dev
+            ${{ secrets.DOCKER_HUB_USERNAME }}/api:latest-dev
+            ${{ secrets.DOCKER_HUB_USERNAME }}/api:${{ env.LATEST_REPO_TAG }}-dev
+          platforms: linux/amd64,linux/arm64
+          dockfile: Dockerfile.dev
+          build-args: |
+            VERSION=${{ env.LATEST_REPO_TAG }}
+            BUN_VERSION=${{ env.BUN_VERSION }}
+            NODE_VERSION=${{ env.NODE_VERSION }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
