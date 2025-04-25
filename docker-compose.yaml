@@ -2,7 +2,7 @@ services:
   strapi:
     build:
       context: .
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.dev
       args:
         NODE_VERSION: 22.15.0 
         BUN_VERSION: 1.2.10
