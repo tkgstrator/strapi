@@ -31,4 +31,3 @@ RUN bash -c "bun create strapi@${VERSION} app \
 WORKDIR /opt/app
 RUN bun install
 RUN bun strapi build
-CMD ["bun", "run", "start"]
