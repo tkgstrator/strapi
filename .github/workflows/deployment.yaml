@@ -37,7 +37,7 @@ jobs:
           REPO_NAME="strapi"
           LATEST_REPO_TAG=$(curl -s https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/tags \
           | jq -r '.[].name' \
-          | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+          | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
           | head -n 1)
           echo "Latest tag of $REPO_OWNER/$REPO_NAME is: $LATEST_REPO_TAG"
           echo "LATEST_REPO_TAG=$LATEST_REPO_TAG" >> $GITHUB_ENV
