@@ -23,14 +23,14 @@ jobs:
           echo "Latest Node.js 22 version is: $NODE_VERSION"
           echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_ENV
 
-      - name: Get latest Bun version
+      - name: Get latest Bun version from Docker Hub
         id: bun 
         run: |
           BUN_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/oven/bun/tags?page_size=1000 | jq -r '.results[] | select(.name | test("^1\\.[0-9]+\\.[0-9]+$")) | .name' | sort -V | tail -n 1)
           echo "Latest Bun version is: $BUN_VERSION"
           echo "BUN_VERSION=$BUN_VERSION" >> $GITHUB_ENV
 
-      - name: Get latest tag of a specific repository
+      - name: Get latest tag of strapi
         id: repo
         run: |
           REPO_OWNER="strapi"
